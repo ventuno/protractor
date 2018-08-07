@@ -32,15 +32,17 @@ var passingTests = [
   'node built/cli.js spec/directConnectConf.js',
   'node built/cli.js spec/restartBrowserBetweenTestsConf.js',
   'node built/cli.js spec/driverProviderLocalConf.js',
+  'node built/cli.js spec/driverProviderLocalConf.js --useBlockingProxy',
   'node built/cli.js spec/getCapabilitiesConf.js',
   'node built/cli.js spec/controlLockConf.js',
   'node built/cli.js spec/customFramework.js',
   'node built/cli.js spec/noGlobalsConf.js',
   'node built/cli.js spec/angular2Conf.js',
   'node built/cli.js spec/hybridConf.js',
-  'node built/cli.js spec/built/noCFSmokeConf.js',
+  'node built/cli.js spec/built/noCFBasicConf.js',
+  'node built/cli.js spec/built/noCFBasicConf.js --useBlockingProxy',
   'node built/cli.js spec/built/noCFPluginConf.js',
-  'node scripts/driverProviderAttachSession.js',
+  //'node scripts/driverProviderAttachSession.js',
   'node scripts/errorTest.js',
   // Interactive Element Explorer tasks
   'node scripts/interactive_tests/interactive_test.js',
@@ -127,8 +129,8 @@ executor.addCommandlineTest('node built/cli.js spec/errorTest/slowHttpAndTimeout
     .expectExitCode(1)
     .expectErrors([
       {message: 'The following tasks were pending[\\s\\S]*\\$http: slowcall'},
-      {message: 'The following tasks were pending[\\s\\S]*' +
-                '\\$timeout: function \\(\\) {[\\s\\S]*' +
+      {message: 'The following tasks were pending:[\\s\\S]*' +
+                '- \\$timeout: function\\(\\) {[\\s\\S]*' +
                   '\\$scope\\.slowAngularTimeoutStatus = \'done\';[\\s\\S]' +
                 '*}'}
     ]);

@@ -49,7 +49,7 @@ export class DebugHelper {
    *     first time that the debugger is called.
    * @param {number=} opt_debugPort Optional port to use for the debugging
    *     process.
-   * 
+   *
    * @return {Promise} If blockUntilExit, a promise resolved when the debugger process
    *     exits. Otherwise, resolved when the debugger process is ready to begin.
    */
@@ -162,11 +162,11 @@ export class DebugHelper {
         let execFn_ = () => {
           // Run code through vm so that we can maintain a local scope which is
           // isolated from the rest of the execution.
-          let res;
+          let res: wdpromise.Promise<any>;
           try {
             res = vm_.runInContext(code, sandbox);
           } catch (e) {
-            res = 'Error while evaluating command: ' + e;
+            res = wdpromise.when('Error while evaluating command: ' + e);
           }
           if (!wdpromise.isPromise(res)) {
             res = wdpromise.when(res);
@@ -270,7 +270,7 @@ export class DebugHelper {
         },
         (err: string) => {
           console.error(err);
-          process.exit(1);
+          return process.exit(1) as never;
         });
   }
 

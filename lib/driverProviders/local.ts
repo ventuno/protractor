@@ -17,8 +17,6 @@ import {Logger} from '../logger';
 import {DriverProvider} from './driverProvider';
 
 const SeleniumConfig = require('webdriver-manager/built/lib/config').Config;
-const SeleniumChrome = require('webdriver-manager/built/lib/binaries/chrome_driver').ChromeDriver;
-const SeleniumStandAlone = require('webdriver-manager/built/lib/binaries/standalone').StandAlone;
 const remote = require('selenium-webdriver/remote');
 
 let logger = new Logger('local');
@@ -86,6 +84,37 @@ export class Local extends DriverProvider {
         }
       }
     }
+
+    if (this.config_.capabilities.browserName === 'firefox') {
+      if (!this.config_.geckoDriver) {
+        logger.debug(
+            'Attempting to find the gecko driver binary in the default ' +
+            'location used by webdriver-manager');
+
+        try {
+          let updateJson = path.resolve(SeleniumConfig.getSeleniumDir(), 'update-config.json');
+          let updateConfig = JSON.parse(fs.readFileSync(updateJson).toString());
+          this.config_.geckoDriver = updateConfig.gecko.last;
+        } catch (err) {
+          throw new BrowserError(
+              logger,
+              'No update-config.json found. ' +
+                  'Run \'webdriver-manager update\' to download binaries.');
+        }
+      }
+
+      // Check if file exists, if not try .exe or fail accordingly
+      if (!fs.existsSync(this.config_.geckoDriver)) {
+        if (fs.existsSync(this.config_.geckoDriver + '.exe')) {
+          this.config_.geckoDriver += '.exe';
+        } else {
+          throw new BrowserError(
+              logger,
+              'Could not find gecko driver at ' + this.config_.geckoDriver +
+                  '. Run \'webdriver-manager update\' to download binaries.');
+        }
+      }
+    }
   }
 
   /**
@@ -119,6 +148,9 @@ export class Local extends DriverProvider {
     // configure server
     if (this.config_.chromeDriver) {
       serverConf.jvmArgs.push('-Dwebdriver.chrome.driver=' + this.config_.chromeDriver);
+    }
+    if (this.config_.geckoDriver) {
+      serverConf.jvmArgs.push('-Dwebdriver.gecko.driver=' + this.config_.geckoDriver);
     }
 
     this.server_ = new remote.SeleniumServer(this.config_.seleniumServerJar, serverConf);

@@ -11,13 +11,13 @@ let clientSideScripts = require('./clientsidescripts');
 let logger = new Logger('element');
 
 export class WebdriverWebElement {}
-export interface WebdriverWebElement extends WebElement {}
+export interface WebdriverWebElement extends WebElement { [key: string]: any; }
 
 let WEB_ELEMENT_FUNCTIONS = [
   'click', 'sendKeys', 'getTagName', 'getCssValue', 'getAttribute', 'getText', 'getSize',
   'getLocation', 'isEnabled', 'isSelected', 'submit', 'clear', 'isDisplayed', 'getId',
   'takeScreenshot'
-] as (keyof WebdriverWebElement)[];
+];
 
 /**
  * ElementArrayFinder is used for operations on an array of elements (as opposed
@@ -88,7 +88,7 @@ export class ElementArrayFinder extends WebdriverWebElement {
 
     // TODO(juliemr): might it be easier to combine this with our docs and just
     // wrap each one explicity with its own documentation?
-    WEB_ELEMENT_FUNCTIONS.forEach((fnName: keyof WebdriverWebElement) => {
+    WEB_ELEMENT_FUNCTIONS.forEach((fnName: string) => {
       this[fnName] = (...args: any[]) => {
         let actionFn = (webElem: any) => {
           return webElem[fnName].apply(webElem, args);
@@ -251,8 +251,8 @@ export class ElementArrayFinder extends WebdriverWebElement {
   }
 
   /**
-   * Get an element within the ElementArrayFinder by index. The index starts at
-   * 0\. Negative indices are wrapped (i.e. -i means ith element from last)
+   * Get an element within the ElementArrayFinder by index. The index starts at 0.
+   * Negative indices are wrapped (i.e. -i means ith element from last)
    * This does not actually retrieve the underlying element.
    *
    * @alias element.all(locator).get(index)
@@ -656,7 +656,7 @@ export class ElementArrayFinder extends WebdriverWebElement {
       let list = arr.map((elementFinder?: ElementFinder, index?: number) => {
         let mapResult = mapFn(elementFinder, index);
         // All nested arrays and objects will also be fully resolved.
-        return wdpromise.fullyResolved(mapResult);
+        return wdpromise.fullyResolved(mapResult) as wdpromise.Promise<T>;
       });
       return wdpromise.all(list);
     });
@@ -867,7 +867,7 @@ export class ElementFinder extends WebdriverWebElement {
         this.browser_, getWebElements, elementArrayFinder.locator(),
         elementArrayFinder.actionResults_);
 
-    WEB_ELEMENT_FUNCTIONS.forEach((fnName: keyof WebdriverWebElement) => {
+    WEB_ELEMENT_FUNCTIONS.forEach((fnName: string) => {
       (this)[fnName] = (...args: any[]) => {
         return (this.elementArrayFinder_)[fnName]
             .apply(this.elementArrayFinder_, args)
@@ -1100,7 +1100,7 @@ export class ElementFinder extends WebdriverWebElement {
   /**
    * Same as ElementFinder.isPresent(), except this checks whether the element
    * identified by the subLocator is present, rather than the current element
-   * finder. i.e. `element(by.css('#abc')).element(by.css('#def')).isPresent()`
+   * finder, i.e.: `element(by.css('#abc')).element(by.css('#def')).isPresent()`
    * is identical to `element(by.css('#abc')).isElementPresent(by.css('#def'))`.
    *
    * // Or using the shortcut $() notation instead of element(by.css()):

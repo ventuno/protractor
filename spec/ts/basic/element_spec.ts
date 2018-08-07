@@ -3,21 +3,6 @@ import * as q from 'q';
 
 import {$, $$, browser, by, By, element, ElementArrayFinder, ElementFinder, ExpectedConditions, promise as ppromise, WebElement} from '../../..';
 
-describe('verify control flow is off', function() {
-  it('should have set webdriver.promise.USE_PROMISE_MANAGER', () => {
-    expect((ppromise as any).USE_PROMISE_MANAGER).toBe(false);
-  });
-
-  it('should not wait on one command before starting another', async function() {
-    // Wait forever
-    browser.controlFlow().wait(
-        (browser.controlFlow() as any).promise((): void => undefined) as ppromise.Promise<void>);
-
-    // then return
-    await browser.controlFlow().execute(() => ppromise.when(null));
-  });
-});
-
 describe('ElementFinder', function() {
   it('should return the same result as browser.findElement', async function() {
     await browser.get('index.html#/form');

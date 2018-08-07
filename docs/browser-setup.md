@@ -54,6 +54,19 @@ capabilities: {
 },
 ```
 
+Adding Firefox-Specific Options
+------------------------------
+
+Firefox options are nested in the `moz:firefoxOptions` object. A full list of options is at the [GeckoDriver](https://github.com/mozilla/geckodriver#firefox-capabilities) Github page. For example, to run in safe mode, your configuration would look like this:
+
+```javascript
+capabilities: {
+  'browserName': 'firefox',
+  'moz:firefoxOptions': {
+    'args': ['--safe-mode']
+  }
+},
+```
 
 Testing Against Multiple Browsers
 ---------------------------------
@@ -118,25 +131,40 @@ browser2.$('.css').click();
 
 Setting up PhantomJS
 --------------------
-_Note: We recommend against using PhantomJS for tests with Protractor. There are many reported issues with PhantomJS crashing and behaving differently from real browsers._
+PhantomJS is [no longer officially supported](https://groups.google.com/forum/#!topic/phantomjs/9aI5d-LDuNE). Instead, we recommend to use one of the following alternatives:
+1. Chrome with [headless mode](https://developers.google.com/web/updates/2017/04/headless-chrome). Available in Chrome 59+ on Linux/Mac OS X, and in Chrome 60+ on Windows.
+2. Firefox with [headless mode](https://developer.mozilla.org/en-US/docs/Mozilla/Command_Line_Options#-headless). Available in Firefox 55+ on Linux, and in Firefox 56+ on Windows/Mac OS X.
+3. Chrome with [Xvfb](http://www.tothenew.com/blog/protractor-with-jenkins-and-headless-chrome-xvfb-setup/).
 
-In order to test locally with [PhantomJS](http://phantomjs.org/), you'll need to either have it installed globally, or relative to your project. For global install see the [PhantomJS download page](http://phantomjs.org/download.html). For local install run: `npm install phantomjs`.
 
-Add phantomjs to the driver capabilities, and include a path to the binary if using local installation:
+Using headless Chrome
+---------------------
+To start Chrome in headless mode, start Chrome with the `--headless` flag.
+
+As of Chrome 58 you also need to set `--disable-gpu`, though this may change in future versions. 
+Also, changing the window size during a test will not work in headless mode, but you can set it
+on the commandline like this `--window-size=800,600`.
+
 ```javascript
 capabilities: {
-  'browserName': 'phantomjs',
+  browserName: 'chrome',
 
-  /* 
-   * Can be used to specify the phantomjs binary path.
-   * This can generally be ommitted if you installed phantomjs globally.
-   */
-  'phantomjs.binary.path': require('phantomjs-prebuilt').path,
+  chromeOptions: {
+     args: [ "--headless", "--disable-gpu", "--window-size=800,600" ]
+   }
+}
+```
+
+Using headless Firefox
+---------------------
+To start Firefox in headless mode, start Firefox with the [`--headless` flag](https://developer.mozilla.org/en-US/docs/Mozilla/Command_Line_Options#-headless).
+
+```javascript
+capabilities: {
+  browserName: 'firefox',
   
-  /*
-   * Command line args to pass to ghostdriver, phantomjs's browser driver.
-   * See https://github.com/detro/ghostdriver#faq
-   */
-  'phantomjs.ghostdriver.cli.args': ['--loglevel=DEBUG']
+  'moz:firefoxOptions': {
+     args: [ "--headless" ]
+   }
 }
 ```

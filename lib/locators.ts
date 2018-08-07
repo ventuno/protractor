@@ -10,7 +10,7 @@ export class WebdriverBy {
   css: (css: string) => By = By.css;
   id: (id: string) => By = By.id;
   linkText: (linkText: string) => By = By.linkText;
-  js: (js: string) => By = By.js;
+  js: (js: string|Function, ...var_args: any[]) => By = By.js;
   name: (name: string) => By = By.name;
   partialLinkText: (partialText: string) => By = By.partialLinkText;
   tagName: (tagName: string) => By = By.tagName;
@@ -25,6 +25,7 @@ export interface ProtractorLocator {
        rootSelector: string) => wdpromise.Promise<WebElement[]>;
   row?: (index: number) => Locator;
   column?: (index: string) => Locator;
+  toString?: () => string;
 }
 export type Locator = ProtractorLocator | WebDriverLocator;
 
@@ -414,10 +415,11 @@ export class ProtractorBy extends WebdriverBy {
    * var dog = element(by.cssContainingText('.pet', 'Dog'));
    *
    * @param {string} cssSelector css selector
-   * @param {string} searchString text search
+   * @param {string|RegExp} searchString text search
    * @returns {ProtractorLocator} location strategy
    */
-  cssContainingText(cssSelector: string, searchText: string): ProtractorLocator {
+  cssContainingText(cssSelector: string, searchText: string|RegExp): ProtractorLocator {
+    searchText = (searchText instanceof RegExp) ? '__REGEXP__' + searchText.toString() : searchText;
     return {
       findElementsOverride: (driver: WebDriver, using: WebElement, rootSelector: string):
                                 wdpromise.Promise<WebElement[]> => {

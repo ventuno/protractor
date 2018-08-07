@@ -7,7 +7,7 @@ export let config: Config = {
   framework: 'jasmine',
 
   specs: [
-    'noCF/smoke_spec.js'
+    'basic/*_spec.js'
   ],
 
   capabilities: env.capabilities,

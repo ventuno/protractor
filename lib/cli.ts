@@ -46,9 +46,15 @@ let allowedNames = [
   'sauceKey',
   'sauceAgent',
   'sauceBuild',
+  'sauceSeleniumUseHttp',
   'sauceSeleniumAddress',
   'browserstackUser',
   'browserstackKey',
+  'browserstackProxy',
+  'kobitonUser',
+  'kobitonKey',
+  'testobjectUser',
+  'testobjectKey',
   'directConnect',
   'firefoxPath',
   'noGlobals',
@@ -60,6 +66,7 @@ let allowedNames = [
   'multiCapabilities',
   'getMultiCapabilities',
   'maxSessions',
+  'verbose',
   'verboseMultiSessions',
   'baseUrl',
   'rootElement',
@@ -94,6 +101,7 @@ let allowedNames = [
   'frameworkPath',
   'elementExplorer',
   'debug',
+  'logLevel',
   'disableChecks',
   'browser',
   'name',
@@ -103,7 +111,8 @@ let allowedNames = [
   'build',
   'grep',
   'invert-grep',
-  'explorer'
+  'explorer',
+  'stackTrace'
 ];
 
 let optimistOptions: any = {
@@ -127,7 +136,8 @@ let optimistOptions: any = {
     troubleshoot: 'Turn on troubleshooting output',
     elementExplorer: 'Interactively test Protractor commands',
     debuggerServerPort: 'Start a debugger server at specified port instead of repl',
-    disableChecks: 'disable cli checks'
+    disableChecks: 'Disable cli checks',
+    logLevel: 'Define Protractor log level [ERROR, WARN, INFO, DEBUG]'
   },
   aliases: {
     browser: 'capabilities.browserName',
@@ -198,6 +208,17 @@ if (argv.specs) {
 }
 if (argv.exclude) {
   argv.exclude = processFilePatterns_(<string>argv.exclude);
+}
+
+if (argv.capabilities && argv.capabilities.chromeOptions) {
+  // ensure that single options (which optimist parses as a string)
+  // are passed in an array in chromeOptions when required:
+  // https://sites.google.com/a/chromium.org/chromedriver/capabilities#TOC-chromeOptions-object
+  ['args', 'extensions', 'excludeSwitches', 'windowTypes'].forEach((key) => {
+    if (typeof argv.capabilities.chromeOptions[key] === 'string') {
+      argv.capabilities.chromeOptions[key] = [argv.capabilities.chromeOptions[key]];
+    }
+  });
 }
 
 // Use default configuration, if it exists.

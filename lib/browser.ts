@@ -89,8 +89,8 @@ export interface ElementHelper extends Function {
  */
 function buildElementHelper(browser: ProtractorBrowser): ElementHelper {
   let element = ((locator: Locator) => {
-    return new ElementArrayFinder(browser).all(locator).toElementFinder_();
-  }) as ElementHelper;
+                  return new ElementArrayFinder(browser).all(locator).toElementFinder_();
+                }) as ElementHelper;
 
   element.all = (locator: Locator) => {
     return new ElementArrayFinder(browser).all(locator);
@@ -209,6 +209,7 @@ export class ProtractorBrowser extends AbstractExtendedWebDriver {
           return this.internalRootEl;
         });
       }
+      return wdpromise.when(this.internalRootEl);
     }, `Set angular root selector to ${value}`);
   }
 
@@ -544,7 +545,7 @@ export class ProtractorBrowser extends AbstractExtendedWebDriver {
    * fork = fork.restartSync();
    * fork.get('page2'); // 'page2' gotten by restarted fork
    *
-   * @throws {TypeError} Will throw an error if the control flow is not enabled 
+   * @throws {TypeError} Will throw an error if the control flow is not enabled
    * @returns {ProtractorBrowser} The restarted browser
    */
   restartSync(): ProtractorBrowser {
@@ -659,12 +660,12 @@ export class ProtractorBrowser extends AbstractExtendedWebDriver {
               return this.driver.controlFlow()
                   .execute(
                       () => {
-                        return this.plugins_.waitForPromise();
+                        return this.plugins_.waitForPromise(this);
                       },
                       'Plugins.waitForPromise()')
                   .then(() => {
                     return this.driver.wait(() => {
-                      return this.plugins_.waitForCondition().then((results: boolean[]) => {
+                      return this.plugins_.waitForCondition(this).then((results: boolean[]) => {
                         return results.reduce((x, y) => x && y, true);
                       });
                     }, this.allScriptsTimeout, 'Plugins.waitForCondition()');
@@ -860,7 +861,7 @@ export class ProtractorBrowser extends AbstractExtendedWebDriver {
                                                           url.resolve(this.baseUrl, destination);
     if (this.ignoreSynchronization) {
       return this.driver.get(destination)
-          .then(() => this.driver.controlFlow().execute(() => this.plugins_.onPageLoad()))
+          .then(() => this.driver.controlFlow().execute(() => this.plugins_.onPageLoad(this)))
           .then(() => null);
     }
 
@@ -900,7 +901,7 @@ export class ProtractorBrowser extends AbstractExtendedWebDriver {
                       return url !== this.resetUrl;
                     },
                     (err: IError) => {
-                      if (err.code == 13) {
+                      if (err.code == 13 || err.name === 'JavascriptError') {
                         // Ignore the error, and continue trying. This is
                         // because IE driver sometimes (~1%) will throw an
                         // unknown error from this execution. See
@@ -917,7 +918,7 @@ export class ProtractorBrowser extends AbstractExtendedWebDriver {
         .then(() => {
           // Run Plugins
           return this.driver.controlFlow().execute(() => {
-            return this.plugins_.onPageLoad();
+            return this.plugins_.onPageLoad(this);
           });
         })
         .then(() => {
@@ -933,7 +934,7 @@ export class ProtractorBrowser extends AbstractExtendedWebDriver {
                       let message = angularTestResult.message;
                       logger.error(`Could not find Angular on page ${destination} : ${message}`);
                       throw new Error(
-                          'Angular could not be found on the page ${destination}.' +
+                          `Angular could not be found on the page ${destination}. ` +
                           `If this is not an Angular application, you may need to turn off waiting for Angular.
                           Please see 
                           https://github.com/angular/protractor/blob/master/docs/timeouts.md#waiting-for-angular-on-page-load`);
@@ -985,7 +986,7 @@ export class ProtractorBrowser extends AbstractExtendedWebDriver {
         .then(() => {
           // Run Plugins
           return this.driver.controlFlow().execute(() => {
-            return this.plugins_.onPageStable();
+            return this.plugins_.onPageStable(this);
           });
         })
         .then(() => null);
@@ -1046,8 +1047,8 @@ export class ProtractorBrowser extends AbstractExtendedWebDriver {
                         clientSideScripts.setLocation, 'Protractor.setLocation()', rootEl, url)
                     .then((browserErr: Error) => {
                       if (browserErr) {
-                        throw 'Error while navigating to \'' + url + '\' : ' +
-                            JSON.stringify(browserErr);
+                        throw 'Error while navigating to \'' + url +
+                            '\' : ' + JSON.stringify(browserErr);
                       }
                     }));
   }
@@ -1059,7 +1060,7 @@ export class ProtractorBrowser extends AbstractExtendedWebDriver {
    * cases it will return `$location.absUrl()` instead.  This function is only here for legacy
    * users, and will probably be removed in Protractor 6.0.
    *
-   * @deprecated Please use `browser.getCurrentUrl()` 
+   * @deprecated Please use `browser.getCurrentUrl()`
    * @example
    * browser.get('http://angular.github.io/protractor/#/api');
    * expect(browser.getLocationAbsUrl())
